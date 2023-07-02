@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.340">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Louie John M. Rubio">
+
+<title>Large Language Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="p312_llm_rubio_files/libs/clipboard/clipboard.min.js"></script>
+<script src="p312_llm_rubio_files/libs/quarto-html/quarto.js"></script>
+<script src="p312_llm_rubio_files/libs/quarto-html/popper.min.js"></script>
+<script src="p312_llm_rubio_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="p312_llm_rubio_files/libs/quarto-html/anchor.min.js"></script>
+<link href="p312_llm_rubio_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="p312_llm_rubio_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="p312_llm_rubio_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="p312_llm_rubio_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="p312_llm_rubio_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="p312_llm_rubio_files/libs/quarto-diagram/mermaid.min.js"></script>
+<script src="p312_llm_rubio_files/libs/quarto-diagram/mermaid-init.js"></script>
+<link href="p312_llm_rubio_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#general-overviewideas" id="toc-general-overviewideas" class="nav-link active" data-scroll-target="#general-overviewideas">General overview/ideas</a></li>
+  <li><a href="#neural-networks" id="toc-neural-networks" class="nav-link" data-scroll-target="#neural-networks">Neural networks</a>
+  <ul class="collapse">
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">Training</a></li>
+  <li><a href="#neural-network-architecture" id="toc-neural-network-architecture" class="nav-link" data-scroll-target="#neural-network-architecture">Neural network architecture</a></li>
+  </ul></li>
+  <li><a href="#tokens-and-embeddings" id="toc-tokens-and-embeddings" class="nav-link" data-scroll-target="#tokens-and-embeddings">Tokens and embeddings</a>
+  <ul class="collapse">
+  <li><a href="#tokenization" id="toc-tokenization" class="nav-link" data-scroll-target="#tokenization">Tokenization</a></li>
+  <li><a href="#embeddings" id="toc-embeddings" class="nav-link" data-scroll-target="#embeddings">Embeddings</a></li>
+  </ul></li>
+  <li><a href="#running-llms" id="toc-running-llms" class="nav-link" data-scroll-target="#running-llms">Running LLMs</a>
+  <ul class="collapse">
+  <li><a href="#attempting-to-run-fastai-notebooks-for-fine-tuning" id="toc-attempting-to-run-fastai-notebooks-for-fine-tuning" class="nav-link" data-scroll-target="#attempting-to-run-fastai-notebooks-for-fine-tuning">Attempting to run FastAI notebooks for fine-tuning</a></li>
+  <li><a href="#llama-alpaca-and-llama.cppalpaca.cpp" id="toc-llama-alpaca-and-llama.cppalpaca.cpp" class="nav-link" data-scroll-target="#llama-alpaca-and-llama.cppalpaca.cpp">LLaMA, Alpaca, and llama.cpp/alpaca.cpp</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Large Language Models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Louie John M. Rubio </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>Notes for Physics 312 class readings</p>
+<section id="general-overviewideas" class="level2">
+<h2 class="anchored" data-anchor-id="general-overviewideas">General overview/ideas</h2>
+<p>Before getting into the math and internal workings of a large language model, one of the readings in class looks at a specific example: ChatGPT, and how it works.</p>
+<p>ChatGPT is an example of a <strong>large language model</strong> that functions like a chatbot. The post by Stephen Wolfram titled <em>“What is ChatGPT doing … and why does it work?”</em> <span class="citation" data-cites="wolfram_2023"><a href="#ref-wolfram_2023" role="doc-biblioref">[1]</a></span> provides a basic picture of how LLMs (specifically ChatGPT) work.</p>
+<p>Here are some key ideas from the post.</p>
+<ol type="1">
+<li>ChatGPT creates human-intelligible text by adding one probable “word” at a time</li>
+</ol>
+<ul>
+<li><p>The model chooses “probable words” based on data the model is trained on.</p></li>
+<li><p>The most probable word is not necessarily what’s chosen (meaning there’s a random factor on choosing words — a “temperature” parameter).</p></li>
+</ul>
+<ol start="2" type="1">
+<li>How are these probabilities calculated?</li>
+</ol>
+<ul>
+<li><p>The probabilities are not derived empirically from data (the amount of text available is huge), and when considering consecutive words, the number of possibilities increase even more.</p></li>
+<li><p>Large language models attempt to estimate the probability of occurrence of sequences even without seeing explicitly all possible combinations of words in text.</p></li>
+</ul>
+<p>The latter sections go over neural networks (large language models are neural networks):</p>
+<ol start="3" type="1">
+<li>Neural networks</li>
+</ol>
+<ul>
+<li><p>Neural networks are composed of a layer of nodes called neurons: these neurons correspond to a simple numerical function</p></li>
+<li><p>Neurons have incoming inputs with associated weights, and the value of each neuron depends on the values of previously connected neurons and an applied “activation” function. Mathematically:</p>
+<p><span class="math display">\[ f[w \cdot x + b], x = \{x_1, x_2, …\} \]</span> <span class="math inline">\(f\)</span> is the form taken by the activation function, which generally introduces a non-linearity. <span class="math inline">\(w\)</span> are weights, <span class="math inline">\(b\)</span> are constants that are chosen per neuron (biases), and <span class="math inline">\(x\)</span> are the inputs to the neuron.</p></li>
+<li><p>Weights of the neurons in the network are adjusted at each step until it learns the target function.</p></li>
+<li><p>A loss function (or a cost function) is computed to see “how far away” from the model is from the target.</p></li>
+<li><p>Minimizing the loss function - gradient descent</p></li>
+</ul>
+<ol start="4" type="1">
+<li>Considerations when training neural networks</li>
+</ol>
+<ul>
+<li><p>Choosing neural net architecture</p></li>
+<li><p>Getting/preparing the training data</p>
+<ul>
+<li>Instead of training from scratch: a) incorporate an already-trained neural net, b) use the neural net to generate more training examples</li>
+</ul></li>
+<li><p>Determining the size of the neural network (depends on the perceived difficulty of the task)</p></li>
+<li><p>Different choices for setting hyperparameters, loss functions, minimization of the loss function</p></li>
+</ul>
+<p>Since neural networks take in numbers as inputs, text should be represented to numbers. How do large language models take in its inputs?</p>
+<ol start="5" type="1">
+<li>Representing texts as numbers: <strong>embeddings</strong></li>
+</ol>
+<ul>
+<li><p>A word embedding can be thought of as laying out words in a “meaning space”.</p></li>
+<li><p>You can extend this to expressing sequences of words as a collection of numbers.</p></li>
+</ul>
+<p>In large language models, instead of words, the object of interest are tokens. Tokens can be less than a word (like a prefix, suffix, a sub-unit of a word).</p>
+<p>Lastly, the most relevant part, at least for the class, is the internal workings of large language models. In the text <span class="citation" data-cites="wolfram_2023"><a href="#ref-wolfram_2023" role="doc-biblioref">[1]</a></span>, there is a section on what’s inside ChatGPT. * a GPT-3 network with 175 billion weights</p>
+<ul>
+<li><p>the neural network architecture used is <strong>“transformer”</strong></p></li>
+<li><p>transformers have the notion of <strong>“attention”</strong></p></li>
+<li><p>embedding vectors for original tokens &amp;rarr embedding vector goes through the layers of the neural network (feed-forward)</p></li>
+<li><p>only specific neurons on different layers are connected (transformer architecture)</p></li>
+</ul>
+<p>Summarizing these points, large language models are neural networks trained on large amounts of text, often resulting in models with millions to billions of parameters. Since neural networks take in numbers as input, words are converted into a numerical representation.</p>
+<p>We’ll focus on key ideas mentioned here and some questions that pop up here.</p>
+<ul>
+<li><p>What model architectures are used for LLMs?</p></li>
+<li><p>What are “transformers” and “attention” in the context of neural networks?</p></li>
+<li><p>How are text represented to numbers in neural networks?</p></li>
+</ul>
+</section>
+<section id="neural-networks" class="level2">
+<h2 class="anchored" data-anchor-id="neural-networks">Neural networks</h2>
+<p>For this section, we look at multiple readings in class: Carolin Penke’s blog post titled “A mathematician’s introduction to transformers and large language models” <span class="citation" data-cites="carolin_2022"><a href="#ref-carolin_2022" role="doc-biblioref">[2]</a></span>, the original transformer paper “Attention is all you need!” <span class="citation" data-cites="attention_2017"><a href="#ref-attention_2017" role="doc-biblioref">[3]</a></span> and the annotated version <span class="citation" data-cites="annotated_trans"><a href="#ref-annotated_trans" role="doc-biblioref">[4]</a></span>, and Christopher Olah’s blog post on “Understanding LSTM networks” <span class="citation" data-cites="colah"><a href="#ref-colah" role="doc-biblioref">[5]</a></span>.</p>
+<section id="training" class="level3">
+<h3 class="anchored" data-anchor-id="training">Training</h3>
+<p>Neural networks trained on huge amounts of text to generate intelligible sentences from input text is the usual approach to creating language models <span class="citation" data-cites="carolin_2022"><a href="#ref-carolin_2022" role="doc-biblioref">[2]</a></span>. Instead of training a neural network from scratch, it is common practice to use a pre-trained model which is trained further on a task-specific dataset (<em>fine-tuning</em> a model). Computing outputs from a trained model is referred to as <em>inference</em>.</p>
+<p>Pre-training, fine-tuning, and inference for neural networks involve computing resources. Computational steps in neural networks can involve a series of matrix multiplications, and depending on the size of the model, may require systems with a lot of compute. The goal of training is for the model to learn the relationships of inputs to outputs in the data.</p>
+</section>
+<section id="neural-network-architecture" class="level3">
+<h3 class="anchored" data-anchor-id="neural-network-architecture">Neural network architecture</h3>
+<section id="feedforward-neural-network" class="level4">
+<h4 class="anchored" data-anchor-id="feedforward-neural-network">Feedforward neural network</h4>
+<div class="cell" data-file="neural_net.mmd">
+<div class="cell-output-display">
+<div id="fig-nn" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-nn">graph LR
+    Input --&gt; A 
+    style C fill:#8fbaff
+    style D fill:#8fbaff
+    style E fill:#8fbaff
+    style F fill:#8fbaff
+    style G fill:#ffffe0
+
+    Input --&gt; B
+    A(( )) --- C(( ))
+    B(( )) --- C
+    A --- D(( ))
+    B --- D
+    A --- E(( ))
+    B --- E
+    A --- F(( ))
+    B --- F(( ))
+    C --- G(( ))
+    D --- G
+    E --- G 
+    F --- G 
+    G --&gt; Output</pre>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;1: Example of a feedforward neural network.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>A trained neural network takes in a vector representation of input data into an input layer. It passes through hidden layers before exiting the output layer. Moving through successive layers involves matrix multiplication of the vectors and applying an activation function. For the feedforward neural network architecture, there are no loops. The feedforward neural network is one of the most basic architectures developed.</p>
+</section>
+<section id="recurrent-neural-network-and-lstm" class="level4">
+<h4 class="anchored" data-anchor-id="recurrent-neural-network-and-lstm">Recurrent neural network and LSTM</h4>
+<div class="cell" data-file="RNN.mmd">
+<div class="cell-output-display">
+<div id="fig-rnn" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-rnn">graph LR
+ A((xₜ)) --&gt; B( A )
+ B --&gt; B
+ B --&gt; C(hₜ)</pre>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;2: Recurrent neural network.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>A recurrent neural network allows loops in parts of the neural network. For the RNN shown in <a href="#fig-rnn">Figure&nbsp;2</a>, some chunk of neural network <span class="math inline">\(A\)</span> takes in <span class="math inline">\(x\)</span> as an input and outputs <span class="math inline">\(h\)</span>, while allowing for information to be passed from one step of the network through the next using the loop. RNNs have been used for applications with sequential data, like text. However, most of the successful results using RNNs were made through LSTMs, a special kind of RNN.</p>
+<div id="fig-dependence" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="RNN-longtermdependencies.png" class="img-fluid figure-img" style="width:60.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;3: Example of an unrolled RNN from C. Olah’s blog <span class="citation" data-cites="colah"><a href="#ref-colah" role="doc-biblioref">[5]</a></span>.</figcaption>
+</figure>
+</div>
+<p>One of the biggest problems encountered by traditional RNNs are vanishing gradients. As mentioned in the overview, neural networks by updating its weights such that the loss/cost function is minimized. When the gradients vanish, the network barely updates its weights. In the example in <span class="citation" data-cites="colah"><a href="#ref-colah" role="doc-biblioref">[5]</a></span>, trying to predict the last word in the phrase “I grew up in France… I speak fluent <strong>French</strong>.” would be troublesome because of the “long-term dependency”. Immediate information at the end suggests the name of a language completes the phrase, but the language in question needs the context of <em>France</em> to specify the language. In the diagram from the blog (<a href="#fig-dependence">Figure&nbsp;3</a>), it’s possible for cases where the context is very far away (<span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span>) from the output being predicted (<span class="math inline">\(h_{t+1}\)</span>). In Carolin’s post <span class="citation" data-cites="carolin_2022"><a href="#ref-carolin_2022" role="doc-biblioref">[2]</a></span>, this is described as older words having minimal influence on the gradients.</p>
+<p>Long-term short memory (LSTM) networks can learn long-term dependencies by introducing a cell state. Information can be removed or added to the cell states using gates. While the addition of gates helps with long-term dependencies, the sequential nature of RNNs and LSTMs constrains parallelization in training.</p>
+</section>
+<section id="transformer-architecture" class="level4">
+<h4 class="anchored" data-anchor-id="transformer-architecture">Transformer architecture</h4>
+<p>The transformer architecture is first showcased in the paper “Attention is All You Need <span class="citation" data-cites="attention_2017"><a href="#ref-attention_2017" role="doc-biblioref">[3]</a></span>”. Before this work, attention mechanisms are often used to enhance RNNs. The transformer architecture relies mainly on attention mechanism to get relationships between input and output. In the “Attention” paper, the main task is machine translation.</p>
+<p>In the paper, they describe the attention function as “mapping a query and a set of key-value pairs to an output, where the query, keys, values, and output are all vectors” <span class="citation" data-cites="attention_2017"><a href="#ref-attention_2017" role="doc-biblioref">[3]</a></span>. The attention function is computed simultaneously for all queries by matrix multiplication. The definition introduced in the paper is given by:</p>
+<p><span class="math display">\[Attention(Q,K,V) = softmax \left( \dfrac{QK^T}{\sqrt{d_k}} \right) V\]</span></p>
+<p>The <span class="math inline">\(softmax\)</span> function converts the values into a probability distribution (which means they sum to 1). The transformer architecture utilizes parallel attention layers which they call multi-head attention.</p>
+<p>The creation of word embeddings is part of pre-training for models with the transformer architecture. These embeddings are used to convert input and output tokens to vectors. To make use of the order of sequences without using recurrence or convolution, they added information on the position of a token in the sequence which they call “positional encoding”. The positional encoding is added to the input embeddings.</p>
+<p>The transformer architecture is widely used in large language models and has large success in various natural language processing applications.</p>
+</section>
+</section>
+</section>
+<section id="tokens-and-embeddings" class="level2">
+<h2 class="anchored" data-anchor-id="tokens-and-embeddings">Tokens and embeddings</h2>
+<p>In this section, we focus on tokenization and embeddings. Representing words into a numerical form is important for neural networks to be able to accept text as input. Tokenization often refers to breaking up raw text into tokens, and embeddings is used to represent words into a numerical vector.</p>
+<section id="tokenization" class="level3">
+<h3 class="anchored" data-anchor-id="tokenization">Tokenization</h3>
+<p>In tokenization, raw text is converted to tokens. Tokens can be words, characters, or subwords (like prefixes, suffixes, etc.). spaCy <span class="citation" data-cites="spacy2"><a href="#ref-spacy2" role="doc-biblioref">[6]</a></span> is a popular library for NLP applications, and has its own tokenizer. We will use it as an example to see what happens to text after tokenization.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> spacy</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>nlp <span class="op">=</span> spacy.load(<span class="st">"en_core_web_sm"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>sentence <span class="op">=</span> <span class="st">"""A trained neural network takes in a vector representation of input data into an input layer. </span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">It passes through hidden layers before exiting the output layer. </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">Moving through successive layers involves matrix multiplication of the vectors and applying an activation function. </span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">For the feedforward neural network architecture, there are no loops. </span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">The feedforward neural network is one of the most basic architectures developed."""</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>doc <span class="op">=</span> nlp(sentence)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>token_set <span class="op">=</span> (([w.text <span class="cf">for</span> w <span class="kw">in</span> doc]))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(token_set)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>['A', 'trained', 'neural', 'network', 'takes', 'in', 'a', 'vector', 'representation', 'of', 'input', 'data', 'into', 'an', 'input', 'layer', '.', '\n', 'It', 'passes', 'through', 'hidden', 'layers', 'before', 'exiting', 'the', 'output', 'layer', '.', '\n', 'Moving', 'through', 'successive', 'layers', 'involves', 'matrix', 'multiplication', 'of', 'the', 'vectors', 'and', 'applying', 'an', 'activation', 'function', '.', '\n', 'For', 'the', 'feedforward', 'neural', 'network', 'architecture', ',', 'there', 'are', 'no', 'loops', '.', '\n', 'The', 'feedforward', 'neural', 'network', 'is', 'one', 'of', 'the', 'most', 'basic', 'architectures', 'developed', '.']</code></pre>
+</div>
+</div>
+<p>In this example text, we can see that aside from punctuation, the newline character was also included in the tokenization. For specific NLP applications, special tokens are added using additional rules to help the model identify important parts of the sentence. In FastAI’s own <a href="https://docs.fast.ai/text.core.html#tokenizer">Tokenizer</a>, some special tokens that they use include <code>xxmaj</code> and <code>xxbos</code>. The rules used are seen in the <a href="https://docs.fast.ai/text.core.html#tokenizer">documentation</a>.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.text.<span class="bu">all</span> <span class="im">import</span> Tokenizer, WordTokenizer, coll_repr, first</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>WordTokenizer() works like spaCy’s tokenizer. Punctuations and newline characters are also counted as tokens.</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>tknzr <span class="op">=</span> WordTokenizer()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>toks <span class="op">=</span> <span class="bu">next</span>(tknzr([sentence])) <span class="co">#tknzr is a generator object, and WordTokenizer() can tokenize more than one document. In this case, we only have one</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(coll_repr(toks, <span class="dv">73</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(#73) ['A','trained','neural','network','takes','in','a','vector','representation','of','input','data','into','an','input','layer','.','\n','It','passes','through','hidden','layers','before','exiting','the','output','layer','.','\n','Moving','through','successive','layers','involves','matrix','multiplication','of','the','vectors','and','applying','an','activation','function','.','\n','For','the','feedforward','neural','network','architecture',',','there','are','no','loops','.','\n','The','feedforward','neural','network','is','one','of','the','most','basic','architectures','developed','.']</code></pre>
+</div>
+</div>
+<p>Using FastAI’s <code>Tokenizer</code> class, special tokens created using a set of rules are included in the tokenization.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>tknzr2 <span class="op">=</span> Tokenizer(tknzr)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>toks2 <span class="op">=</span> tknzr2(sentence)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(coll_repr(toks2, <span class="dv">100</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(#78) ['xxbos','a','trained','neural','network','takes','in','a','vector','representation','of','input','data','into','an','input','layer','.','\n','xxmaj','it','passes','through','hidden','layers','before','exiting','the','output','layer','.','\n','xxmaj','moving','through','successive','layers','involves','matrix','multiplication','of','the','vectors','and','applying','an','activation','function','.','\n','xxmaj','for','the','feedforward','neural','network','architecture',',','there','are','no','loops','.','\n','xxmaj','the','feedforward','neural','network','is','one','of','the','most','basic','architectures','developed','.']</code></pre>
+</div>
+</div>
+<p>Here, <code>xxbos</code> indicates the start of the text. <code>xxmaj</code> indicates that the next token is capitalized. Using a token that takes note of capitalization this saves on the number of words that needs representing in the embedding matrix (notice how all tokens here are decapitalized).</p>
+<p>In creating the embedding matrix, one of the dimensions is the size of the vocabulary (or the number of tokens). Converting all text to lowercase and creating a special token instead reduces the number of tokens to be represented.</p>
+</section>
+<section id="embeddings" class="level3">
+<h3 class="anchored" data-anchor-id="embeddings">Embeddings</h3>
+<p>Word embeddings represents tokens in a vector representation. The goal is to represent tokens in such a way that semantic information is encoded. In general, embeddings are stored in a matrix of size <span class="math inline">\(|V| \times D\)</span>, where <span class="math inline">\(V\)</span> is the vocabulary size and <span class="math inline">\(D\)</span> is the dimensionality of the embedding.</p>
+<p>Let’s consider the tokens we created using FastAI’s <code>Tokenizer</code> and create a vocabulary from the tokens.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>vocab <span class="op">=</span> <span class="bu">sorted</span>(<span class="bu">set</span>(<span class="bu">list</span>(toks2)))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>word_to_ix <span class="op">=</span> {word: i <span class="cf">for</span> i, word <span class="kw">in</span> <span class="bu">enumerate</span>(vocab)}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Each unique token now has an associated ID.</p>
+<p>The general practice is to convert tokens first into a one-hot encoded vector, where the length of the vector is the size of the vocabulary. All values are zero for the one-hot encoded vector except for the index of the token being represented.</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>word_to_ix</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>{'\n': 0,
+ ',': 1,
+ '.': 2,
+ 'a': 3,
+ 'activation': 4,
+ 'an': 5,
+ 'and': 6,
+ 'applying': 7,
+ 'architecture': 8,
+ 'architectures': 9,
+ 'are': 10,
+ 'basic': 11,
+ 'before': 12,
+ 'data': 13,
+ 'developed': 14,
+ 'exiting': 15,
+ 'feedforward': 16,
+ 'for': 17,
+ 'function': 18,
+ 'hidden': 19,
+ 'in': 20,
+ 'input': 21,
+ 'into': 22,
+ 'involves': 23,
+ 'is': 24,
+ 'it': 25,
+ 'layer': 26,
+ 'layers': 27,
+ 'loops': 28,
+ 'matrix': 29,
+ 'most': 30,
+ 'moving': 31,
+ 'multiplication': 32,
+ 'network': 33,
+ 'neural': 34,
+ 'no': 35,
+ 'of': 36,
+ 'one': 37,
+ 'output': 38,
+ 'passes': 39,
+ 'representation': 40,
+ 'successive': 41,
+ 'takes': 42,
+ 'the': 43,
+ 'there': 44,
+ 'through': 45,
+ 'trained': 46,
+ 'vector': 47,
+ 'vectors': 48,
+ 'xxbos': 49,
+ 'xxmaj': 50}</code></pre>
+</div>
+</div>
+<p>The code below is an example of a one-hot encoding for the token <code>activation</code> in the vocabulary we used. Usually, available packages would handle the creation of the vocabulary.</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>word <span class="op">=</span> <span class="st">"activation"</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>vector <span class="op">=</span> np.zeros(<span class="bu">len</span>(word_to_ix.values()))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>index <span class="op">=</span> word_to_ix[word]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>vector[index] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>vector</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>array([0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])</code></pre>
+</div>
+</div>
+<p>The word embedding is obtained by multiplying this one-hot encoding vector with the embedding matrix. The result is a vector in the dimensions of the embedding.</p>
+<p>We try to create embeddings for words in a sample document. This PyTorch <a href="https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html">documentation</a><span class="citation" data-cites="pytorch"><a href="#ref-pytorch" role="doc-biblioref">[7]</a></span> is particularly helpful. The code example here is based on the n-gram language modeling example in PyTorch, with modifications to allow the use of the MPS in devices running on Apple Silicon (thank you Chester for this!)</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> torch.device(<span class="st">"mps"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>CONTEXT_SIZE <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>EMBEDDING_DIM <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co"># We will use Shakespeare Sonnet 2</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>test_sentence <span class="op">=</span> <span class="st">"""When forty winters shall besiege thy brow,</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st">And dig deep trenches in thy beauty's field,</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">Thy youth's proud livery so gazed on now,</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="st">Will be a totter'd weed of small worth held:</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="st">Then being asked, where all thy beauty lies,</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="st">Where all the treasure of thy lusty days;</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="st">To say, within thine own deep sunken eyes,</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="st">Were an all-eating shame, and thriftless praise.</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="st">How much more praise deserv'd thy beauty's use,</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="st">If thou couldst answer 'This fair child of mine</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="st">Shall sum my count, and make my old excuse,'</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="st">Proving his beauty by succession thine!</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="st">This were to be new made when thou art old,</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="st">And see thy blood warm when thou feel'st it cold."""</span>.split()</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="co"># we should tokenize the input, but we will ignore that for now</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="co"># build a list of tuples.</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Each tuple is ([ word_i-CONTEXT_SIZE, ..., word_i-1 ], target word)</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>ngrams <span class="op">=</span> [</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    (</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        [test_sentence[i <span class="op">-</span> j <span class="op">-</span> <span class="dv">1</span>] <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(CONTEXT_SIZE)],</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        test_sentence[i]</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(CONTEXT_SIZE, <span class="bu">len</span>(test_sentence))</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the first 3, just so you can see what they look like.</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ngrams[:<span class="dv">3</span>])</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>vocab <span class="op">=</span> <span class="bu">set</span>(test_sentence)</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>word_to_ix <span class="op">=</span> {word: i <span class="cf">for</span> i, word <span class="kw">in</span> <span class="bu">enumerate</span>(vocab)}</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> NGramLanguageModeler(nn.Module):</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, vocab_size, embedding_dim, context_size):</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>(NGramLanguageModeler, <span class="va">self</span>).<span class="fu">__init__</span>()</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.embeddings <span class="op">=</span> nn.Embedding(vocab_size, embedding_dim, device<span class="op">=</span>device)</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.linear1 <span class="op">=</span> nn.Linear(context_size <span class="op">*</span> embedding_dim, <span class="dv">128</span>, device<span class="op">=</span>device)</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.linear2 <span class="op">=</span> nn.Linear(<span class="dv">128</span>, vocab_size, device<span class="op">=</span>device)</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, inputs):</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>        embeds <span class="op">=</span> <span class="va">self</span>.embeddings(inputs).view((<span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>))</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> F.relu(<span class="va">self</span>.linear1(embeds))</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> <span class="va">self</span>.linear2(out)</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>        log_probs <span class="op">=</span> F.log_softmax(out, dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> log_probs</span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>losses <span class="op">=</span> []</span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>loss_function <span class="op">=</span> nn.NLLLoss()</span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> NGramLanguageModeler(<span class="bu">len</span>(vocab), EMBEDDING_DIM, CONTEXT_SIZE)</span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> optim.SGD(model.parameters(), lr<span class="op">=</span><span class="fl">0.005</span>)</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">50</span>):</span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a>    total_loss <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a>    ep_start <span class="op">=</span> time.time()</span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> context, target <span class="kw">in</span> ngrams:</span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 1. Prepare the inputs to be passed to the model (i.e, turn the words</span></span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a>        <span class="co"># into integer indices and wrap them in tensors)</span></span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a>        context_idxs <span class="op">=</span> torch.tensor([word_to_ix[w] <span class="cf">for</span> w <span class="kw">in</span> context], dtype<span class="op">=</span>torch.<span class="bu">long</span>, device<span class="op">=</span>device)</span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 2. Recall that torch *accumulates* gradients. Before passing in a</span></span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a>        <span class="co"># new instance, you need to zero out the gradients from the old</span></span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a>        <span class="co"># instance</span></span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a>        model.zero_grad()</span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 3. Run the forward pass, getting log probabilities over next</span></span>
+<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a>        <span class="co"># words</span></span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a>        log_probs <span class="op">=</span> model(context_idxs)</span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 4. Compute your loss function. (Again, Torch wants the target</span></span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a>        <span class="co"># word wrapped in a tensor)</span></span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> loss_function(log_probs, torch.tensor([word_to_ix[target]], dtype<span class="op">=</span>torch.<span class="bu">long</span>, device<span class="op">=</span>device))</span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Step 5. Do the backward pass and update the gradient</span></span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the Python number from a 1-element Tensor by calling tensor.item()</span></span>
+<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a>        total_loss <span class="op">+=</span> loss.item()</span>
+<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a>    losses.append(total_loss)</span>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print(f"Done epoch# {epoch} - loss={total_loss:.2f} (t = {time.time() - ep_start:.2f}s)")</span></span>
+<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a><span class="co"># To get the embedding of a particular word, e.g. "beauty"</span></span>
+<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a><span class="co">#print(model.embeddings.weight[word_to_ix["beauty"]])</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[(['forty', 'When'], 'winters'), (['winters', 'forty'], 'shall'), (['shall', 'winters'], 'besiege')]</code></pre>
+</div>
+</div>
+<p>In the code above, the context size is 2 and the embedding dimension is 4. The data used to train the model here is n-grams from the <code>test_sentence</code>. An n-gram contains a token and adjacent words to it. In the case of the PyTorch example, the n-gram includes <span class="math inline">\(n\)</span> words before the chosen word.</p>
+<p>Printing the weights of embedding below, we see that <code>beauty</code> is represented using 4 numbers (since our embedding dimension is 4).</p>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model.embeddings.weight[word_to_ix[<span class="st">"beauty"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tensor([ 0.3094,  0.7100,  2.0676, -1.8533], device='mps:0',
+       grad_fn=&lt;SelectBackward0&gt;)</code></pre>
+</div>
+</div>
+<p>In the transformer architecture, the word embedding is part of the model’s pre-training.</p>
+</section>
+</section>
+<section id="running-llms" class="level2">
+<h2 class="anchored" data-anchor-id="running-llms">Running LLMs</h2>
+<section id="attempting-to-run-fastai-notebooks-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="attempting-to-run-fastai-notebooks-for-fine-tuning">Attempting to run FastAI notebooks for fine-tuning</h3>
+<p>During the earlier part of the semester, I attempted to run <a href="https://github.com/fastai/fastbook/blob/master/10_nlp.ipynb">FastAI’s NLP notebook for fine-tuning</a> with limited success. The notebook runs up until loading the models. However, it fails to run after attempting to do the fine-tuning (which is probably the meat of the topic for that notebook.)</p>
+<ul>
+<li><p>I end up running out of RAM when using the notebook on Google Colab’s free tier. Changing from CPU to TPU doesn’t help.</p></li>
+<li><p>I tried to run it locally on a Macbook Air (it has the M1 chip). The kernel dies, and it raises an error <code>("anaconda3/envs/torch-gpu/lib/python3.8/site-packages/torch/amp/autocast_mode.py:202: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling")</code>. Code can run if you set the DataLoader to CPU (but it’s running very slow.)</p></li>
+<li><p>I’ve also tried making a new environment to see if I can <a href="https://towardsdatascience.com/installing-pytorch-on-apple-m1-chip-with-gpu-acceleration-3351dc44d67c">run the code using MPS instead of the CPU</a>, but it seems like there’s no way to override the “device_type” (I’m referring to the language_model_learner part of the code).</p></li>
+</ul>
+<p>Based on what I’ve read (and some class discussions), the incompatibility results from how weights and gradients are stored (they are numbers, and in computers, they can be represented with different precision.)</p>
+<p>While it is generally hard to run large language models on consumer hardware because of the size of the matrices used, recent developments have allowed running large language models in devices with smaller compute.</p>
+</section>
+<section id="llama-alpaca-and-llama.cppalpaca.cpp" class="level3">
+<h3 class="anchored" data-anchor-id="llama-alpaca-and-llama.cppalpaca.cpp">LLaMA, Alpaca, and llama.cpp/alpaca.cpp</h3>
+<p>In February 2023, researches from Meta <span class="citation" data-cites="llama2023"><a href="#ref-llama2023" role="doc-biblioref">[8]</a></span> released LLaMA, large language models which are trained exclusively on publicly available datasets. The LLaMA models are competitive with current state-of-the-art (SoA) models, with the takeaway being the ability to get SoA performance without using proprietary or closed datasets.</p>
+<p>In March 2023, researchers in Stanford released an instruction-following model called <strong>Alpaca</strong> <span class="citation" data-cites="alpaca"><a href="#ref-alpaca" role="doc-biblioref">[9]</a></span>, which is fine-tuned from Meta’s LLaMA model with 7B parameters. The fine-tuning is done using instruction-following data generated using methods in the <a href="https://arxiv.org/abs/2212.10560">Self-instruct paper</a>.</p>
+<p>Within the same month, <a href="https://github.com/ggerganov/llama.cpp"><code>llama.cpp</code></a> was created with the goal of running the LLaMa model on a Macbook using <strong>quantization</strong>. Quantization is done to reduce the float precision of the weights, resulting in a lower memory footprint for the model.</p>
+<p><a href="https://github.com/antimatter15/alpaca.cpp"><code>alpaca.cpp</code></a> modifies [<code>llama.cpp</code>] to include a chat interface not too different from ChatGPT. To run [<code>alpaca.cpp</code>] on the Macbook Air M1, I had to download quantized model weights that can be loaded the laptop. This <a href="https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/tree/main">repository</a> contains a replica of the Alpaca model quantized to 4 bits so that a CPU with at least 5 GBs of RAM can run it.</p>
+<div id="fig-alpaca" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="alpaca.gif" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;4: Running alpaca.cpp on a Macbook Air M1 (GIF at 3x speed)</figcaption>
+</figure>
+</div>
+<p><a href="#fig-alpaca">Figure&nbsp;4</a> shows a GIF of the [<code>alpaca.cpp</code>] running on the Terminal in chat mode using only default options. The fact that this model can generate text that sound sensible while running on a local device is impressive.</p>
+<p>By default, [<code>alpaca.cpp</code>] uses a temperature of 0.1 as its sampling parameter. Changing the temperature changes the probability of choices in generation, which results in an overall change in the quality of generated text.</p>
+<p>Let’s use the prompt “What is a large language model?” and see the results for different temperatures</p>
+<section id="temperature" class="level4">
+<h4 class="anchored" data-anchor-id="temperature">Temperature</h4>
+<p>All the prompts used here is “What is a large language model?”. The seed is set to <code>1688115903</code>. The same prompt is used thrice and the results are shown here.</p>
+<p><code>temperature = 0.1</code></p>
+<blockquote class="blockquote">
+<p>A large language model is one with millions or even billions of parameters, which are used to predict the next word in text based on its context. These models can be trained using supervised learning techniques and have been successfully applied for tasks such as natural language understanding (NLU), automatic summarization, question answering, dialog systems, machine translation, and more recently, conversational AI.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A large language model is an artificial intelligence system that uses deep learning algorithms to generate human-like text based on given inputs or contexts. These models are typically used for tasks such as natural language understanding, automatic summarization and question answering.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A large language model is an artificial intelligence system that uses deep learning algorithms to generate human-like text based on given inputs or contexts. These models are typically used for tasks such as natural language understanding, automatic summarization and question answering.</p>
+</blockquote>
+<p><code>temperature = 0.25</code></p>
+<blockquote class="blockquote">
+<p>A large language model is one which has been trained on a lot of data and contains many parameters, allowing it to capture complex patterns in text with high accuracy. Large models are typically more accurate than smaller ones but can take much longer to train due to the increased computational cost associated with training such deep neural networks.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A large language model is an artificial intelligence system that has been trained on a lot of data and contains many parameters, allowing it to capture complex patterns in text with high accuracy. Such models are often used for tasks such as natural language understanding or generation; they can also be applied to other areas like computer vision or robotics.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A large language model is an artificial intelligence system that has been trained on a lot of data and contains many parameters, allowing it to capture complex patterns in text with high accuracy. Such models are often used for tasks such as natural language understanding or generation; they can also be applied to other areas like computer vision or robotics.</p>
+</blockquote>
+<p><code>temperature = 0.5</code></p>
+<blockquote class="blockquote">
+<p>A “large” or “deep” language model is one with many parameters, usually trained on a lot of data and using complex algorithms to learn patterns in text. Such models are used for tasks such as natural-language understanding (NLU) and generation; they can be applied to problems involving large vocabularies like machine translation, summarization or question answering.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A “large” or “deep” language model is one with many parameters, usually trained on a lot of data and using complex algorithms to learn patterns in text. Such models are used for tasks involving large vocabularies like machine translation, summarization, question answering and natural language understanding (NLU).</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A large language model is an artificial intelligence system that uses neural networks to predict the next word in a sequence. It can be used for tasks such as machine translation, summarization and question answering. Large models typically have many layers of neurons and use millions or even billions of parameters which are learned from huge amounts of data.</p>
+</blockquote>
+<p>Using a <code>temperature = 1</code> results in more varied outputs when the same prompt is used.</p>
+<blockquote class="blockquote">
+<p>A “large” or “larger” language model refers to models with more parameters, typically based on size and performance. Such models can generate larger outputs compared to smaller models but are often less efficient in terms of computation time. Examples include BERT-style transformer-based large neural network (TBLN) models, GPTs such as OpenAI’s GPT-3 or Google’s AutoML TensorFlow/PyTorch based language modeling tasks like BigGAN and CLSMENA.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A “large” language model is one that uses more data, parameters and computational resources in order to generate higher quality outputs compared to smaller models. Examples of such larger language models include BERT-style transformer models with millions or even hundreds of millions of trainable parameters as well as GPT-3 based systems which have been trained on immense datasets of text containing several trillion words and thousands of languages, alphabets, and characters (Unicode). Such large neural networks are able to achieve state-of-the-art results in tasks such as natural language understanding. Large models generally require more data and computing resources but also yield significantly better performance than smaller ones on most practical NLP applications which rely heavily on a deep understanding of the text being processed.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A large language model, often referred to as “big” or “deep” models, are artificial intelligence algorithms that use millions-billions of parameters and layers in order to process natural languages accurately. These typically neural network based approaches usually consist many thousand times more complex than the traditional n-gram language modelling techniques with which they replace for tasks such as understanding text for sentiment analysis or answering questions by using knowledge base information from the web. #bigml #language_modeling</p>
+</blockquote>
+<p><code>temperature = 1.5</code>. The generated text start to sound non-sensical in some parts.</p>
+<blockquote class="blockquote">
+<p>A Large Language Model (LLM) refers to a specific type of machine translation system wherein one input document can be automatically translated into multiple different output documents by leveraging sophisticated Natural Langaue Processing and Machine Learning algorithms. LLM models aim at enrichment understanding among related or even totally unrelated outputs, through adaptively reusing the already stored data retrieved from large language datasets like CommonSense-509 and GPT2 corpus for building predictive sentences as per user requests made in different languages by taking into account historical contextual information. LLM is thus far proved more successful than previous NLTKs, RNNMGDPPs with best efforts achieved up to 87% accuracy test-based prediction rates on varied corpora over the net! “““Generated output as per user input and context”“”</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A Large Language Model (LLM) is defined by its scale. It consists of very deep neural networks that rely heavily on data for training the larger models, usually more than 10 layers in number depending upon the purpose and application it was built. Because of their vast size and complexity when compared to regular sized Neural Nets they require massive amounts o dataset as input during model building which eventually leads them achieve high accuracy levels even across different tasks on various datasets e g image or speech recognitions, question answerings etc.. The primary advantages enjoyed by LLMs compared with smaller ones is that it can quickly and accurately process immense volume of complex data required without human effort. However for any purpose such machines may require constant monitoring, tuning if its performance has dropped over time due to new datasets or trends on which larger models have less resilience .</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>A large language model consists of artificial intelligence systems that can process a significant amount of natural language in order to understand and generate speech. These large language models enable more efficient processing for tasks such as machine translation, summarization, question/answering services, text classification problems, and many other NLP applications related with understanding human spoken or written languages across various cultural regions. This work focuses on improving existing models that were designed before recent datasets to achieve a new level of performance in regards to accuracies for tasks such as named entity recognition from Wikipedia. We will explore methods like fine-tuning and data augmentation together with regularization techniques, including dropout for training over large language model parameters to enhancements its precision while reducing computational resources consumption significantly using other optimization methods typically implemented along many deep learning algorithms used in various NLP tasks on datasets not limited to only the English tongue nor just specific sub-fields.</p>
+</blockquote>
+<p>Using <code>temperature = 2</code>, the output tokens looks like a mishmash of related words.</p>
+<blockquote class="blockquote">
+<p>A larger language model contains additional linguistic context to help improve autocomplete predictions with high- confidence scores on uncompleted text entry requests over short burst microtasks at small tasks scales across the language eception handling of many language. In summary, more comprehensive large scalers will generally show improvements while smaller units are rarely significant enough overall since this type model has much deeper access when it comes to understanding and address data with other external inputs or internal variables. More sophistimac in natural lingo which usually leads towards a greater ability for the given language based on more advanced techs not limited toward manual tuning/tension setting or adjustable factors alone that result from better scaling properties within overall model capacity when dealing along the same field. When tested together with complex benchmark tasks of different dimensions over an amount time duration, we observe increased profits towards certain approaches when compared via baselining smaller settings due to well chosen parameters being a large version inside such scenarios where many microelearning researches show better yields upwards as expected which explains much improved overall performance that otherwise gets downsixed for small-data sifts yet maintain similar effort from larger datasets across various languages at global or individual ends after data collection with enough additional knowledge not present in typical tasks done manually!</p>
+</blockquote>
+<p>This is not necessarily a robust test but it shows the general effect of changing the temperature parameter for the model we used. Setting the model to a high temperature allows for low probability outputs to be chosen. Too high a temperature, and the generated text can appear nonsensical and have grammatical errors.</p>
+<p>In the examples here, the output of the model for temperature less than 1 generally outputs text that are sensible answers to the question.</p>
+</section>
+</section>
+<section id="key-takeaways" class="level3">
+<h3 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h3>
+<ul>
+<li><p>Large language models are neural networks trained on massive text datasets. Many of the operations done within the neural network are performed as matrix multiplications in a computer.</p></li>
+<li><p>The transformer architecture and modifications thereof are used in many state-of-the-art large language models.</p></li>
+<li><p>Running large language models on smaller computing devices are possible by quantization of model parameters.</p></li>
+</ul>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" class="references csl-bib-body" role="list">
+<div id="ref-wolfram_2023" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">Stephen Wolfram Writings, Feb. 2023. <a href="https://writings.stephenwolfram.com/2023/02/what-is-chatgpt-doing-and-why-does-it-work/">https://writings.stephenwolfram.com/2023/02/what-is-chatgpt-doing-and-why-does-it-work/</a></div>
+</div>
+<div id="ref-carolin_2022" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">C. Penke, <span>“A mathematician’s introduction to transformers and large language models,”</span> 2022, doi: <a href="https://doi.org/10.34732/XDVBLG-QSBTYX">10.34732/XDVBLG-QSBTYX</a>.</div>
+</div>
+<div id="ref-attention_2017" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">A. Vaswani <em>et al.</em>, <span>“Attention is all you need,”</span> <em>Advances in neural information processing systems</em>, vol. 30, 2017.</div>
+</div>
+<div id="ref-annotated_trans" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">A. Vaswani <em>et al.</em>, <span>“The annotated transformer.”</span> <a href="http://nlp.seas.harvard.edu/annotated-transformer/">http://nlp.seas.harvard.edu/annotated-transformer/</a></div>
+</div>
+<div id="ref-colah" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">C. Olah, Aug. 2015. <a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">https://colah.github.io/posts/2015-08-Understanding-LSTMs/</a></div>
+</div>
+<div id="ref-spacy2" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">M. Honnibal and I. Montani, <span>“<span class="nocase">spaCy 2</span>: Natural language understanding with <span>B</span>loom embeddings, convolutional neural networks and incremental parsing,”</span> 2017.</div>
+</div>
+<div id="ref-pytorch" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">A. Paszke <em>et al.</em>, <span>“PyTorch: An imperative style, high-performance deep learning library,”</span> in <em>Advances in neural information processing systems 32</em>, Curran Associates, Inc., 2019, pp. 8024–8035. Available: <a href="http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-high-performance-deep-learning-library.pdf">http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-high-performance-deep-learning-library.pdf</a></div>
+</div>
+<div id="ref-llama2023" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">H. Touvron <em>et al.</em>, <span>“LLaMA: Open and efficient foundation language models,”</span> <em>arXiv preprint arXiv:2302.13971</em>, 2023.</div>
+</div>
+<div id="ref-alpaca" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">R. Taori <em>et al.</em>, <span>“Stanford alpaca: An instruction-following LLaMA model,”</span> <em>GitHub repository</em>. <a href="https://github.com/tatsu-lab/stanford_alpaca" class="uri">https://github.com/tatsu-lab/stanford_alpaca</a>; GitHub, 2023.</div>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
